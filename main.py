@@ -8,8 +8,7 @@ logging.basicConfig(level=logging.INFO)
 
 AGENTS = {
     "rag": "http://host.docker.internal:8000/api/v1/ask",
-    "atestado": "http://host.docker.internal:8002/api/v1/atestado",
-    "tools": "http://host.docker.internal:8003/api/v1/executar"
+    "tools": "http://host.docker.internal:8040/api/v1/executar"
 }
 
 class OrchestratorRequest(BaseModel):
@@ -44,7 +43,7 @@ async def orchestrate(request: OrchestratorRequest):
     if target_agent == "main":
         if "atestado" in query_lower:
             target_agent = "atestado"
-        elif "férias" in query_lower or "cadastrar" in query_lower:
+        elif "consulta" in query_lower or "cadastrar" in query_lower:
             if request.role == "funcionario":
                 return OrchestratorResponse(
                     answer="Você não tem permissão para usar comandos de gestão.",
