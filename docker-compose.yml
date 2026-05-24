@@ -3,9 +3,9 @@ services:
     build: .
     container_name: minddesk_router
     ports:
-      - "8050:8000" # Exposto na 8050 da sua máquina, roda na 8000 do container
+      - "8050:8000" 
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - .:/app # Live Reload ativado para você codar sem reiniciar
+      - ./app:/app 
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload

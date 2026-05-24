@@ -1,0 +1,55 @@
+import httpx
+import logging
+
+logger = logging.getLogger(__name__)
+
+async def buscar_contexto_conversa(session_id: str, tenant_id: int, supa_url: str, supa_key: str, limite: int = 6) -> list:
+    """Busca o histórico recente da conversa no Supabase de forma assíncrona."""
+    try:
+        endpoint = f"{supa_url}/rest/v1/historico_conversas"
+        headers = {
+            "apikey": supa_key,
+            "Authorization": f"Bearer {supa_key}",
+            "Content-Type": "application/json"
+        }
+        params = {
+            "session_id": f"eq.{session_id}",
+            "tenant_id": f"eq.{tenant_id}",
+            "select": "role,content",
+            "order": "created_at.desc",
+            "limit": limite
+        }
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(endpoint, headers=headers, params=params)
+            response.raise_for_status()
+            dados = response.json()
+            return dados[::-1] 
+            
+    except Exception as e:
+        logger.error(f"[DB ERROR] Falha ao buscar contexto: {e}")
+        return []
+
+async def salvar_mensagem_historico(session_id: str, tenant_id: int, role: str, content: str, supa_url: str, supa_key: str):
+    """Persiste a mensagem no Supabase de forma assíncrona."""
+    try:
+        endpoint = f"{supa_url}/rest/v1/historico_conversas"
+        headers = {
+            "apikey": supa_key,
+            "Authorization": f"Bearer {supa_key}",
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal" 
+        }
+        payload = {
+            "session_id": session_id,
+            "tenant_id": tenant_id,
+            "role": role,
+            "content": content
+        }
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(endpoint, headers=headers, json=payload)
+            response.raise_for_status()
+            
+    except Exception as e:
+        logger.error(f"[DB ERROR] Falha ao salvar mensagem: {e}")
