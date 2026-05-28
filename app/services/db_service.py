@@ -3,8 +3,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-async def buscar_contexto_conversa(session_id: str, tenant_id: int, supa_url: str, supa_key: str, limite: int = 6) -> list:
-    """Busca o histórico recente da conversa no Supabase de forma assíncrona."""
+async def buscar_contexto_conversa(usuario_id: str, tenant_id: int, supa_url: str, supa_key: str, limite: int = 6) -> list:
+    """Busca o histórico recente filtrando diretamente pelo UUID do usuário corporativo."""
     try:
         endpoint = f"{supa_url}/rest/v1/historico_conversas"
         headers = {
@@ -13,7 +13,7 @@ async def buscar_contexto_conversa(session_id: str, tenant_id: int, supa_url: st
             "Content-Type": "application/json"
         }
         params = {
-            "session_id": f"eq.{session_id}",
+            "usuario_id": f"eq.{usuario_id}", 
             "tenant_id": f"eq.{tenant_id}",
             "select": "role,content",
             "order": "created_at.desc",
@@ -27,11 +27,11 @@ async def buscar_contexto_conversa(session_id: str, tenant_id: int, supa_url: st
             return dados[::-1] 
             
     except Exception as e:
-        logger.error(f"[DB ERROR] Falha ao buscar contexto: {e}")
+        logger.error(f"[DB ERROR] Falha ao buscar contexto por usuário: {e}")
         return []
 
-async def salvar_mensagem_historico(session_id: str, tenant_id: int, role: str, content: str, supa_url: str, supa_key: str):
-    """Persiste a mensagem no Supabase de forma assíncrona."""
+async def salvar_mensagem_historico(usuario_id: str, tenant_id: int, role: str, content: str, supa_url: str, supa_key: str):
+    """Vincula a nova interação ao UUID do usuário para fins de histórico e análise Pulse."""
     try:
         endpoint = f"{supa_url}/rest/v1/historico_conversas"
         headers = {
@@ -41,7 +41,7 @@ async def salvar_mensagem_historico(session_id: str, tenant_id: int, role: str, 
             "Prefer": "return=minimal" 
         }
         payload = {
-            "session_id": session_id,
+            "usuario_id": usuario_id,
             "tenant_id": tenant_id,
             "role": role,
             "content": content
@@ -52,4 +52,4 @@ async def salvar_mensagem_historico(session_id: str, tenant_id: int, role: str, 
             response.raise_for_status()
             
     except Exception as e:
-        logger.error(f"[DB ERROR] Falha ao salvar mensagem: {e}")
+        logger.error(f"[DB ERROR] Falha ao salvar mensagem por usuário: {e}")

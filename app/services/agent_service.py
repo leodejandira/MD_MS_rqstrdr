@@ -6,7 +6,8 @@ logger = logging.getLogger(__name__)
 
 AGENTS = {
     "rag": "http://host.docker.internal:8000/api/v1/ask",
-    "tools": "http://host.docker.internal:8040/api/v1/executar"
+    "tools": "http://host.docker.internal:8040/api/v1/executar",
+    "docs": "http://host.docker.internal:8060/api/v1/processar"
 }
 
 async def repassar_para_agente(target_agent: str, payload: dict) -> str:
