@@ -31,6 +31,7 @@ async def orchestrate(request: OrchestratorRequest):
     payload_to_agent = {
         "query": request.query,
         "tenant_id": request.tenant_id,
+        "user_id": request.usuario_id,
         "openai_api_key": request.openai_api_key,
         "supabase_url": request.supabase_url,
         "supabase_key": request.supabase_key,

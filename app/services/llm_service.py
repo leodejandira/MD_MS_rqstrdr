@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 AGENT_DESCRIPTIONS = {
     "rag": "Use para dúvidas institucionais, manuais de RH, cultura da empresa e políticas gerais.",
-    "tools": "Use para consultas de dados específicos de funcionários no banco de dados (férias, atestados, contratação, cargo).",
+    "tools": "Use para ações no banco de dados (férias, atestados, contratação) OU quando o usuário estiver confirmando que os dados de um documento/atestado estão corretos para serem salvos (ex: dizendo 'sim', 'correto', 'pode salvar').",
     "docs": "Use EXCLUSIVAMENTE quando o usuário enviar um link/URL de imagem ou documento informando que é um atestado médico para leitura."
 }
 
@@ -18,7 +18,8 @@ async def classificar_intencao(historico: list, api_key: str) -> str:
         prompt = f"""Você é um roteador de requisições de um sistema de RH.
         Analise o histórico da conversa e decida qual agente deve processar a ÚLTIMA mensagem.
         
-        REGRA DE OURO: Se a última mensagem do usuário contiver uma URL, link (http/https) ou mencionar explicitamente que está enviando um "atestado", você DEVE OBRIGATORIAMENTE escolher o agente 'docs'.
+        REGRA DE OURO 1: Se a última mensagem contiver uma URL (http/https), roteie para 'docs'.
+        REGRA DE OURO 2: Se o assistente acabou de perguntar se os dados do atestado estão corretos e o usuário respondeu afirmativamente (ex: 'sim', 'está certo'), roteie OBRIGATORIAMENTE para 'tools' para que os dados sejam salvos.
         
         Agentes disponíveis:
         {AGENT_DESCRIPTIONS}
@@ -26,8 +27,7 @@ async def classificar_intencao(historico: list, api_key: str) -> str:
         Histórico recente da conversa:
         {contexto_str}
         
-        Responda APENAS com a chave do agente escolhido (rag, tools ou docs). Não adicione pontuação ou justificativas."""
-        
+        Responda APENAS com a chave do agente escolhido (rag, tools ou docs)."""
         response = await client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "system", "content": prompt}],
